@@ -1,6 +1,6 @@
-# Cataglyphis
+# Cataglyphis hispanica
 
-## Scripts to look at TEdenovo with REPET package v2.5 (Quesneville et al., 2005; Flutre et al., 2011).
+## Scripts to look at TEdenovo with REPET package v2.5 (Quesneville et al., 2005; Flutre et al., 2011) and filter out potential contamination
 
 ## Code for https://doi.org/10.1101/2022.01.07.475286
 
@@ -33,6 +33,7 @@ On the FASTA files you use: * There is a 15-character limit on the name of the f
 ## Repeat Classification of TE libary
 
 #Run RepeatClassifier (Repeat Modeler) to generate a .classified file
+#RepeatClassifier from the RepeatModeler package (http://repeatmasker.org/RepeatModeler)
 
 RepeatClassifier -consensi ${TElib}
 
@@ -81,3 +82,36 @@ blastn -query ${TElib}.classified.Unknown.fa -db Cobs_1.4_OGS_CDS.fa -outfmt '6 
 
 ####Final TE library: merge ${TElib}.classified.Unknown.fa with unmatched ${TElib}.classified.Unknown.fa
 
+### Softmasking of repeats with RepeatMasker v4.0.7 and diversity plots
+
+####Setup these tools in your environment:
+#####RepeatClassifier from the RepeatModeler package (http://repeatmasker.org/RepeatModeler)
+#####RepeatMasker (http://repeatmasker.org/RMDownload.html)
+#####TwoBit (http://hgdownload.soe.ucsc.edu/admin/exe/)
+
+
+####Modify these variables and run it as bash script
+
+export genome="Chispanica"
+export TElib="${TElib}.classified.final.fa"
+
+####Run RepeatClassifier to generate a .classified file
+
+/RepeatModeler/RepeatClassifier -consensi ${TElib}
+
+####Create .2bit file required for createRepeatLandscape.pl
+
+faToTwoBit ${genome}.fa ${genome}.2bit
+twoBitInfo ${genome}.2bit stdout | sort -k2rn > ${genome}.chrom.sizes
+
+####Run RepeatMasker: with option “-a” for alignment output.
+
+RepeatMasker -a -nolow -no_is -e ncbi -lib ${TElib}.classified ${genome}.fa
+
+####Run script calcDivergenceFromAlign.pl using output file (.align) from RepeatMasker
+
+perl /RepeatMasker/util/calcDivergenceFromAlign.pl -s ${genome}.divsum ${genome}.fa.align
+
+####Landscape plot is generated using the output file ${genome}.divsum which contains the Kimura divergence table
+
+perl /RepeatMasker/util/createRepeatLandscape.pl -div ${genome}.divsum -twoBit ${genome}.2bit > ${genome}.html
