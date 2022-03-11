@@ -1,10 +1,10 @@
 # Cataglyphis hispanica
 
-## Scripts to look at TEdenovo with REPET package v2.5 (Quesneville et al., 2005; Flutre et al., 2011) and filter out potential contamination
+## Scripts to look at TEdenovo with REPET package v2.5, filter out potential contamination, Repeat Masking and diversity plot
 
 ## Code for https://doi.org/10.1101/2022.01.07.475286
 
-## Transposons
+## Transposons with TEdenovo
 
 #TEdenovo using REPET v2 #==============================================================================
 
@@ -30,88 +30,8 @@ On the FASTA files you use: * There is a 15-character limit on the name of the f
 
 ##ALL CAPITAL LETTERS awk 'BEGIN{FS=" "}{if(!/>/){print toupper($0)}else{print $1}}' Sp.fst > Sp.fa
 
-## Repeat Classification of TE libary
+## RUN runTEdenovo
 
-#Run RepeatClassifier (Repeat Modeler) to generate a .classified file
-#RepeatClassifier from the RepeatModeler package (http://repeatmasker.org/RepeatModeler)
+## RUN TEcleanup
 
-RepeatClassifier -consensi ${TElib}
-
-## Extract #Unknown sequences
-
-##There are different ways. One would be:
-
-###Extract fasta headers
-
-grep "^>" ${TElib}.classified > ${TElib}.classified.IDs.txt
-
-###Sort by only #Unknown
-
-${TElib}.classified.IDs.txt > ${TElib}.classified.IDs-Unknown.txt
-
-###Extract fasta sequences for #Unknown and "Known"
-
-seqkit grep --pattern-file ${TElib}.classified.IDs-Unknown.txt ${TElib}.classified > ${TElib}.classified.Unknown.fa
-seqkit grep --pattern-file ${TElib}.classified.IDs-Known.txt ${TElib}.classified > ${TElib}.classified.Known.fa
-
-### Compare "Unknown" sequences to Bacteria, mitochondria and CDS Cardiocondyla obscurior sets
-
-####Bacteria
-#ncbi online search can be used if the query file is not big (query length size to 1,000,000 or less), using in "Organism": bacteria (taxid:2). I.e. split original query file.
-#Another way:
-#Use https://github.com/ncbi/sra-tools
-#and work with blast in remote. First, link WGS of interest (Bacteria taxID = 2)
-
-taxid2wgs.pl -title "Bacteria WGS" -alias_file bacteria-wgs 2
-
-#Use sra-blastn to search:
-
-sra-blastn -query ${TElib}.classified.Unknown.fa -db bacteria-wgs -outfmt '6 qseqid sseqid pident evalue staxids stitle' -evalue 0.001 -num_alignments 1 -out Chis_LibTEs_Unknown_blast_bacteria.csv
-
-####Cardiocondyla obscurior mitochondria set
-#Genbank accession # KX951753
-#https://www.ncbi.nlm.nih.gov/nuccore/KX951753
-
-blastn -query ${TElib}.classified.Unknown.fa -db mt-Cobs_KX951753.1.fa -outfmt '6 qseqid sseqid pident evalue staxids stitle' -num_alignments 1 -out Chis_LibTEs_Unknown_blast_CobsCDS.csv -evalue 0.01
-
-####Cardiocondyla obscurior CDS set
-#Available in http://hymenopteragenome.org/cardiocondyla/?q=genome_consortium_datasets
-#CDS https://elsiklab-data.missouri.edu/data/hgd/cds_fasta/Cardiocondyla_obscurior_Cobs_1.4_OGSv1.4_cds.fa.gz
-
-blastn -query ${TElib}.classified.Unknown.fa -db Cobs_1.4_OGS_CDS.fa -outfmt '6 qseqid sseqid pident evalue staxids stitle' -num_alignments 1 -out Chis_LibTEs_Unknown_blast_CobsCDS.csv -evalue 0.01
-
-####Final TE library: merge ${TElib}.classified.Unknown.fa with unmatched ${TElib}.classified.Unknown.fa
-
-### Softmasking of repeats with RepeatMasker v4.0.7 and diversity plots
-
-####Setup these tools in your environment:
-#####RepeatClassifier from the RepeatModeler package (http://repeatmasker.org/RepeatModeler)
-#####RepeatMasker (http://repeatmasker.org/RMDownload.html)
-#####TwoBit (http://hgdownload.soe.ucsc.edu/admin/exe/)
-
-
-####Modify these variables and run it as bash script
-
-export genome="Chispanica"
-export TElib="${TElib}.classified.final.fa"
-
-####Run RepeatClassifier to generate a .classified file
-
-/RepeatModeler/RepeatClassifier -consensi ${TElib}
-
-####Create .2bit file required for createRepeatLandscape.pl
-
-faToTwoBit ${genome}.fa ${genome}.2bit
-twoBitInfo ${genome}.2bit stdout | sort -k2rn > ${genome}.chrom.sizes
-
-####Run RepeatMasker: with option “-a” for alignment output.
-
-RepeatMasker -a -nolow -no_is -e ncbi -lib ${TElib}.classified ${genome}.fa
-
-####Run script calcDivergenceFromAlign.pl using output file (.align) from RepeatMasker
-
-perl /RepeatMasker/util/calcDivergenceFromAlign.pl -s ${genome}.divsum ${genome}.fa.align
-
-####Landscape plot is generated using the output file ${genome}.divsum which contains the Kimura divergence table
-
-perl /RepeatMasker/util/createRepeatLandscape.pl -div ${genome}.divsum -twoBit ${genome}.2bit > ${genome}.html
+## RUN RepeatMasking
