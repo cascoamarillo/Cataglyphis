@@ -1,0 +1,33 @@
+### Softmasking of repeats with RepeatMasker v4.0.7 and diversity plots
+
+####Setup these tools in your environment:
+#####RepeatClassifier from the RepeatModeler package (http://repeatmasker.org/RepeatModeler)
+#####RepeatMasker (http://repeatmasker.org/RMDownload.html)
+#####TwoBit (http://hgdownload.soe.ucsc.edu/admin/exe/)
+
+
+####Modify these variables and run it as bash script
+
+export genome="Chispanica"
+export TElib="${TElib}.classified.final.fa"
+
+####Run RepeatClassifier to generate a .classified file
+
+/RepeatModeler/RepeatClassifier -consensi ${TElib}
+
+####Create .2bit file required for createRepeatLandscape.pl
+
+faToTwoBit ${genome}.fa ${genome}.2bit
+twoBitInfo ${genome}.2bit stdout | sort -k2rn > ${genome}.chrom.sizes
+
+####Run RepeatMasker: with option “-a” for alignment output.
+
+RepeatMasker -a -nolow -no_is -e ncbi -lib ${TElib}.classified ${genome}.fa
+
+####Run script calcDivergenceFromAlign.pl using output file (.align) from RepeatMasker
+
+perl /RepeatMasker/util/calcDivergenceFromAlign.pl -s ${genome}.divsum ${genome}.fa.align
+
+####Landscape plot is generated using the output file ${genome}.divsum which contains the Kimura divergence table
+
+perl /RepeatMasker/util/createRepeatLandscape.pl -div ${genome}.divsum -twoBit ${genome}.2bit > ${genome}.html
