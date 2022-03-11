@@ -45,3 +45,31 @@ grep "^>" ${TElib}.classified > ${TElib}.classified.IDs.txt
 
 ###Sort by only #Unknown
 ${TElib}.classified.IDs.txt > ${TElib}.classified.IDs-Unknown.txt
+
+###Extract fasta sequences for #Unknown and "Known"
+seqkit grep --pattern-file ${TElib}.classified.IDs-Unknown.txt ${TElib}.classified > ${TElib}.classified.Unknown.fa
+seqkit grep --pattern-file ${TElib}.classified.IDs-Known.txt ${TElib}.classified > ${TElib}.classified.Known.fa
+
+### Compare "Unknown" sequences to Bacteria, mitochondria and CDS Cardiocondyla obscurior sets
+
+####Bacteria
+#ncbi online search can be used if the query file is not big (query length size to 1,000,000 or less), using in "Organism": bacteria (taxid:2). I.e. split original query file.
+#Another way:
+#Use https://github.com/ncbi/sra-tools
+#and work with blast in remote. First, link WGS of interest (Bacteria taxID = 2)
+taxid2wgs.pl -title "Bacteria WGS" -alias_file bacteria-wgs 2
+#Use sra-blastn to search:
+sra-blastn -query ${TElib}.classified.Unknown.fa -db bacteria-wgs -outfmt '6 qseqid sseqid pident evalue staxids stitle' -evalue 0.001 -num_alignments 1 -out Chis_LibTEs_Unknown_blast_bacteria.csv
+
+####Cardiocondyla obscurior mitochondria set
+#Genbank accession # KX951753
+#https://www.ncbi.nlm.nih.gov/nuccore/KX951753
+blastn -query ${TElib}.classified.Unknown.fa -db mt-Cobs_KX951753.1.fa -outfmt '6 qseqid sseqid pident evalue staxids stitle' -num_alignments 1 -out Chis_LibTEs_Unknown_blast_CobsCDS.csv -evalue 0.01
+
+####Cardiocondyla obscurior CDS set
+#Available in http://hymenopteragenome.org/cardiocondyla/?q=genome_consortium_datasets
+#CDS https://elsiklab-data.missouri.edu/data/hgd/cds_fasta/Cardiocondyla_obscurior_Cobs_1.4_OGSv1.4_cds.fa.gz
+blastn -query ${TElib}.classified.Unknown.fa -db Cobs_1.4_OGS_CDS.fa -outfmt '6 qseqid sseqid pident evalue staxids stitle' -num_alignments 1 -out Chis_LibTEs_Unknown_blast_CobsCDS.csv -evalue 0.01
+
+## Final TE library: merge ${TElib}.classified.Unknown.fa with unmatched ${TElib}.classified.Unknown.fa
+
