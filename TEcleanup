@@ -19,7 +19,7 @@ grep "^>" ${TElib}.classified > ${TElib}.classified.IDs.txt
 
 ${TElib}.classified.IDs.txt > ${TElib}.classified.IDs-Unknown.txt
 
-###Extract fasta sequences for #Unknown and "Known"
+###Extract fasta sequences for #Unknown and "Known" with seqkit (https://bioinf.shenwei.me/seqkit/)
 
 seqkit grep --pattern-file ${TElib}.classified.IDs-Unknown.txt ${TElib}.classified > ${TElib}.classified.Unknown.fa
 seqkit grep --pattern-file ${TElib}.classified.IDs-Known.txt ${TElib}.classified > ${TElib}.classified.Known.fa
