@@ -1,0 +1,65 @@
+#python
+module load python/2.7.15-201901021238
+module load blast/2.2.22
+
+# The name of the FASTA file you are working with
+export PROJECT_NAME=Chispanica
+
+# The latest version of gcc needs to be loaded for the latest version of GLIBC
+module load gcc/5.3.0
+
+# Runs all of the steps of the TEdenovo pipeline
+
+# Step 1
+rm -rf ${PROJECT_NAME}_db/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 1
+
+# Step 2
+rm -rf ${PROJECT_NAME}_Blaster/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 2 -s Blaster
+
+# Step 2 structural
+rm -rf ${PROJECT_NAME}_LTRharvest
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 2 --struct
+
+# Step 3
+rm -rf ${PROJECT_NAME}_Blaster_Grouper/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 3 -s Blaster -c Grouper
+rm -rf ${PROJECT_NAME}_Blaster_Recon/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 3 -s Blaster -c Recon
+rm -rf ${PROJECT_NAME}_Blaster_Piler/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 3 -s Blaster -c Piler
+
+# Step 3 structural
+rm -rf ${PROJECT_NAME}_LTRharvest_Blastclust/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 3 --struct
+
+# Step 4
+rm -rf ${PROJECT_NAME}_Blaster_Grouper_Map/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 4 -s Blaster -c Grouper -m Map
+rm -rf ${PROJECT_NAME}_Blaster_Recon_Map/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 4 -s Blaster -c Recon -m Map
+rm -rf ${PROJECT_NAME}_Blaster_Piler_Map/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 4 -s Blaster -c Piler -m Map
+
+# Step 4 structural
+rm -rf ${PROJECT_NAME}_LTRharvest_Blastclust_Map
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 4 --struct -m Map
+
+# Step 5
+rm -rf ${PROJECT_NAME}_Blaster_GrpRecPil_Struct_Map_TEclassif/
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 5 -s Blaster -c GrpRecPil -m Map --struct
+
+# Step 6
+rm -rf ${PROJECT_NAME}_Blaster_GrpRecPil_Struct_Map_TEclassif/classifConsensus
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 6 -s Blaster -c GrpRecPil -m Map --struct
+
+# Step 7
+rm -rf ${PROJECT_NAME}_Blaster_GrpRecPil_Struct_Map_TEclassif_Filtered
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 7 -s Blaster -c GrpRecPil -m Map --struct
+
+# Step 8
+rm -rf ${PROJECT_NAME}_Blaster_GrpRecPil_Struct_Map_TEclassif_Filtered_Blastclust
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 8 -s Blaster -c GrpRecPil -m Map --struct -f Blastclust
+rm -rf ${PROJECT_NAME}_Blaster_GrpRecPil_Struct_Map_TEclassif_Filtered_MCL
+TEdenovo.py -P ${PROJECT_NAME} -C TEdenovo.cfg -S 8 -s Blaster -c GrpRecPil -m Map --struct -f MCL
