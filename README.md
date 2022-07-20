@@ -2,7 +2,8 @@
 
 ## Scripts to look at TEdenovo with REPET package v2.5, filter out potential contamination, Repeat Masking and diversity plot
 
-## Code for https://doi.org/10.1101/2022.01.07.475286
+## Code for:
+Darras, Hugo; De Souza Araujo, Natalia; Baudry, Lyam; Guiglielmoni, Nadège; Lorite, Pedro; Marbouty, Martial; Rodriguez, Fernando; Arkhipova, Irina; Koszul, Romain; Flot, Jean-François; Aron, Serge. Chromosome-level genome assembly and annotation of two lineages of the ant Cataglyphis hispanica: stepping stones towards genomic studies of hybridogenesis and thermal adaptation in desert ants. Peer Community Journal, Volume 2 (2022), article no. e40. doi : 10.24072/pcjournal.140. https://peercommunityjournal.org/articles/10.24072/pcjournal.140/
 
 ## Transposons with TEdenovo
 
